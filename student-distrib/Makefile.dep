@@ -1,0 +1,33 @@
+boot.o: boot.S multiboot.h x86_desc.h types.h
+idt_wrappers.o: idt_wrappers.S
+x86_desc.o: x86_desc.S x86_desc.h types.h
+fs.o: fs.c fs.h lib.h types.h terminal.h x86_desc.h i8259.h keyboard.h \
+  sys_handlers.h paging.h rtc.h idt.h schedule.h idt_wrappers.h \
+  sys_handler_helper.h
+i8259.o: i8259.c i8259.h types.h lib.h
+idt.o: idt.c idt.h x86_desc.h types.h lib.h keyboard.h i8259.h terminal.h \
+  sys_handlers.h fs.h paging.h rtc.h schedule.h sys_handler_helper.h \
+  idt_wrappers.h
+kernel.o: kernel.c multiboot.h types.h x86_desc.h lib.h i8259.h debug.h \
+  idt.h keyboard.h terminal.h sys_handlers.h fs.h paging.h rtc.h \
+  schedule.h sys_handler_helper.h idt_wrappers.h
+keyboard.o: keyboard.c keyboard.h x86_desc.h types.h lib.h i8259.h \
+  terminal.h sys_handlers.h fs.h paging.h rtc.h idt.h schedule.h \
+  idt_wrappers.h sys_handler_helper.h
+lib.o: lib.c lib.h types.h
+paging.o: paging.c paging.h x86_desc.h types.h lib.h i8259.h
+rtc.o: rtc.c rtc.h lib.h types.h i8259.h keyboard.h x86_desc.h terminal.h \
+  sys_handlers.h fs.h paging.h schedule.h sys_handler_helper.h idt.h \
+  idt_wrappers.h
+schedule.o: schedule.c schedule.h x86_desc.h types.h lib.h i8259.h \
+  terminal.h keyboard.h sys_handlers.h fs.h paging.h rtc.h idt.h \
+  idt_wrappers.h sys_handler_helper.h
+sys_handler_helper.o: sys_handler_helper.c sys_handler_helper.h \
+  sys_handlers.h lib.h types.h fs.h terminal.h x86_desc.h i8259.h \
+  keyboard.h paging.h rtc.h idt.h schedule.h idt_wrappers.h
+sys_handlers.o: sys_handlers.c sys_handlers.h lib.h types.h fs.h \
+  terminal.h x86_desc.h i8259.h keyboard.h paging.h rtc.h idt.h \
+  schedule.h idt_wrappers.h sys_handler_helper.h
+terminal.o: terminal.c terminal.h x86_desc.h types.h lib.h i8259.h \
+  keyboard.h sys_handlers.h fs.h paging.h rtc.h idt.h schedule.h \
+  idt_wrappers.h sys_handler_helper.h
