@@ -47,14 +47,72 @@ void enable_paging()
 }
 ```
 
-### Break down into end to end tests
+## Scheduling
 
-Explain what these tests test and why
+We implemented Round-Robin scheduling to support running multiple processes at the same time. 
+
+To time the scheduling, we used a PIT (programmable interval timer) and switched programs contexts based on this timer.
+
+Once a PIT interrupt is detected, this code determines which process is next.
 
 ```
-Give an example
+ //if next process is not in the active terminal write to backup video memory
+    if((schedule_arr[curr]->proc_id)/4 != curr_terminal){
+        int term_to_write = (curr_pcb->proc_id)/4;
+        page_directory[VIDMAP_PAGE] = (uint32_t)page_table_vid | URWON;
+        page_table_vid[0] = sched_vid_backups[term_to_write] | URWON;
+        page_table[VIDEO >> 12] = sched_vid_backups[term_to_write] | RWON;
+    }
+    //next process is in current terminal so write to active memory
+    else{
+      page_directory[VIDMAP_PAGE] = (uint32_t)page_table_vid | URWON;
+      page_table_vid[0] = VIDEO | URWON;
+      page_table[VIDEO >> 12] = VIDEO | URWON;
+}
 ```
+And next, we perform a context switch to the next process.
 
+```
+//context switching
+    tss.esp0 = (uint32_t)(schedule_arr[curr])+STACK_SIZE4;
+    tss.ss0 = KERNEL_DS;
+
+    //save old esp/ebp
+    if(schedule_arr[last]){
+        asm (
+          "movl %%esp, %0"
+          :"=r"(schedule_arr[last]->sched_esp)
+        );
+        asm (
+          "movl %%ebp, %0"
+          :"=r"(schedule_arr[last]->sched_ebp)
+        );
+    }
+
+    //restore new esp/ebp
+    asm (
+      "movl %0, %%esp"
+      :
+      :"r"(schedule_arr[curr]->sched_esp)
+    );
+    asm (
+      "movl %0, %%ebp"
+      :
+      :"r"(schedule_arr[curr]->sched_ebp)
+    );
+
+    //set paging to new process
+    page_directory[32] = mem_locs[schedule_arr[curr]->idx] | SURWON;
+```
+Then we need to alter video memory.
+
+ ```
+  memcpy((void*)VIDEO,(const void*)vid_backups[curr_terminal],PG_SIZE);
+  memcpy((void*)line_char_buffer,(const void*)buf_backups[curr_terminal],BUFFER_MAX_INDEX+1);
+  set_buf_idx(buff_idx_backups[curr_terminal]);
+  placeCursor(xcoord_backups[curr_terminal],ycoord_backups[curr_terminal]);
+ ```
+ 
 ### And coding style tests
 
 Explain what these tests test and why
